@@ -5,12 +5,12 @@ import User from "@/models/User";
 
 export const inngest = new Inngest({ id: "quickcart-next" });
 
-
+// Fixed: Triggers moved inside the first argument object
 export const syncUserCreation = inngest.createFunction(
     {
-        id: 'sync-user-from-clerk'
+        id: 'sync-user-from-clerk',
+        triggers: { event: 'clerk/user.created' }  // <-- triggers goes here
     },
-    { event: 'clerk/user.created' },
     async ({ event }) => {
         const { id, first_name, last_name, email_addresses, image_url } = event.data
         const userData = {
@@ -21,16 +21,14 @@ export const syncUserCreation = inngest.createFunction(
         }
         await connectDB()
         await User.create(userData)
-
     }
 )
 
-
 export const syncUserUpdation = inngest.createFunction(
     {
-        id: 'update-user-from-clerk'
+        id: 'update-user-from-clerk',
+        triggers: { event: 'clerk/user.updated' }  // <-- triggers goes here
     },
-    { event: 'clerk/user.updated' },
     async ({ event }) => {
         const { id, first_name, last_name, email_addresses, image_url } = event.data
         const userData = {
@@ -40,21 +38,17 @@ export const syncUserUpdation = inngest.createFunction(
             image_url: image_url
         }
         await connectDB()
-        await User.findByIdAndUpdate(id,userData)
-
+        await User.findByIdAndUpdate(id, userData)
     }
 )
 
-
 export const syncUserDeletion = inngest.createFunction(
     {
-        id: 'delete-user-with-clerk'
+        id: 'delete-user-with-clerk',
+        triggers: { event: 'clerk/user.deleted' }  // <-- triggers goes here
     },
-    {
-        event :'clerk/user.deleted'
-    },
-    async ({event}) => {
-        const {id} = event.data 
+    async ({ event }) => {
+        const { id } = event.data 
         await connectDB()
         await User.findByIdAndDelete(id)
     }
